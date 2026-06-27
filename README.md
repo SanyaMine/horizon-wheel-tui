@@ -10,6 +10,16 @@ Built with Claude (Anthropic, Claude Sonnet 4.6 and Opus 4.8 via Claude Code).
 The upstream [HorizonWheelWizard](https://github.com/irpina/HorizonWheelWizard) was also built with Claude;
 the original [Horizon-SimTool](https://github.com/Dxniel02/Horizon-SimTool) that started it all was built with OpenAI Codex.
 
+**Why AI?** Forza's wheel configuration lives in undocumented XML profiles and INI templates
+packed inside the game's media ZIPs — dozens of `INPUTCMD_*` keys fanned out across ten input
+contexts, a force-feedback format with no spec, and per-device VID/PID quirks that fail silently
+when you get them wrong. There is no official documentation for any of it. Working that out by
+hand means staring at confusing settings files and guessing. AI was used to reverse-engineer the
+format from the shipped profiles, faithfully port the existing C# logic to Python, and capture the
+hard-won details (like the mandatory `0x` VID/PID prefix) in tests and comments so they don't get
+lost again. The goal: turn a fragile, manual, error-prone process into something repeatable that a
+person without a reverse-engineering background can actually use.
+
 Review the code before relying on it. This tool modifies game files — always verify your backups.
 
 ## Credits
