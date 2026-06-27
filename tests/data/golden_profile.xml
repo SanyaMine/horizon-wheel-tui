@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Profiles>
+  <RawGameControllerInputMappingProfile Version="1" Id="GOLDEN-ID" UserFacingName="DefaultRawGameControllerMappingProfileMOZACustom" IsDefaultProfile="0" PrimaryDeviceVidPid="0x346E0015" FFBDeviceVidPid="0x346E0015" FFBMotorIndex="0">
+    <!-- Race -->
+    <Context Version="1" Context="INPUTCONTEXT_RACING">
+      <Value Version="1" Key="INPUTCMD_GAS" VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.0" OuterDeadzone="1.0" />
+      <Value Version="1" Key="INPUTCMD_BRAKE" VidPid="0x346E0015" InputType="Axis" Index="2" InvertAxis="true" InnerDeadzone="0.0" OuterDeadzone="1.0" />
+      <Value Version="1" Key="INPUTCMD_CLUTCH" VidPid="0x346E0015" InputType="Axis" Index="3" InvertAxis="true" InnerDeadzone="0.0" OuterDeadzone="1.0" />
+      <Value Version="1" Key="INPUTCMD_STEERING" VidPid="0x346E0015" InputType="Axis" Index="0" InvertAxis="false" InnerDeadzone="0.0" OuterDeadzone="1.0" />
+      <Value Version="1" Key="INPUTCMD_SHIFTUP" VidPid="0x346E0015" InputType="Button" Index="0" />
+      <Value Version="1" Key="INPUTCMD_SHIFTDOWN" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_AUTODRIVE_CINEMATIC_CAMERA" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_MULLIGAN" VidPid="0x346E0015" InputType="Button" Index="10" />
+      <Value Version="1" Key="INPUTCMD_HANDBRAKE" VidPid="0x346E0015" InputType="Button" Index="2" />
+      <Value Version="1" Key="INPUTCMD_PAUSE_GAME" VidPid="0x346E0015" InputType="Button" Index="6" />
+      <Value Version="1" Key="INPUTCMD_HORN" VidPid="0x346E0015" InputType="Button" Index="3" />
+      <Value Version="1" Key="INPUTCMD_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_SWITCH_CAMERA" VidPid="0x346E0015" InputType="Button" Index="11" />
+      <Value Version="1" Key="INPUTCMD_RADIO_RIGHT" VidPid="0x346E0015" InputType="Button" Index="13" />
+      <Value Version="1" Key="INPUTCMD_ANNA_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="12" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_TOGGLE" VidPid="0x346E0015" InputType="Button" Index="16" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_PREV" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_NEXT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_OPEN_MAP" VidPid="0x346E0015" InputType="Button" Index="17" />
+    </Context>
+    <!-- UI -->
+    <Context Version="1" Context="INPUTCONTEXT_UI">
+      <Value Version="1" Key="INPUTCMD_UI_DPAD_UP_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_UI_DPAD_DOWN_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_UI_DPAD_LEFT_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_UI_DPAD_RIGHT_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_UI_OK_PRESS" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_UI_OK_RELEASE" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_UI_OK_REPEAT" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_UI_OK_WHILEDOWN" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_UI_CANCEL_PRESS" VidPid="0x346E0015" InputType="Button" Index="5" />
+      <Value Version="1" Key="INPUTCMD_UI_CANCEL_RELEASE" VidPid="0x346E0015" InputType="Button" Index="5" />
+      <Value Version="1" Key="INPUTCMD_UI_CANCEL_REPEAT" VidPid="0x346E0015" InputType="Button" Index="5" />
+      <Value Version="1" Key="INPUTCMD_UI_CANCEL_WHILEDOWN" VidPid="0x346E0015" InputType="Button" Index="5" />
+      <Value Version="1" Key="INPUTCMD_UI_START_PRESS" VidPid="0x346E0015" InputType="Button" Index="6" />
+      <Value Version="1" Key="INPUTCMD_UI_START_RELEASE" VidPid="0x346E0015" InputType="Button" Index="6" />
+      <Value Version="1" Key="INPUTCMD_UI_START_REPEAT" VidPid="0x346E0015" InputType="Button" Index="6" />
+      <Value Version="1" Key="INPUTCMD_UI_BACK_PRESS" VidPid="0x346E0015" InputType="Button" Index="7" />
+      <Value Version="1" Key="INPUTCMD_UI_BACK_RELEASE" VidPid="0x346E0015" InputType="Button" Index="7" />
+      <Value Version="1" Key="INPUTCMD_UI_BACK_REPEAT" VidPid="0x346E0015" InputType="Button" Index="7" />
+      <Value Version="1" Key="INPUTCMD_UI_UP_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_UI_UP_RELEASE" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_UI_UP_REPEAT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_UI_DOWN_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_UI_DOWN_RELEASE" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_UI_DOWN_REPEAT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_UI_LEFT_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_UI_LEFT_RELEASE" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_UI_LEFT_REPEAT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_UI_RIGHT_PRESS" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_UI_RIGHT_RELEASE" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_UI_RIGHT_REPEAT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_UI_RTRIGGER_PRESS" VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      <Value Version="1" Key="INPUTCMD_UI_RTRIGGER_RELEASE" VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      <Value Version="1" Key="INPUTCMD_UI_RTRIGGER_REPEAT" VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      <Value Version="1" Key="INPUTCMD_UI_LBUMPER_PRESS" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_UI_LBUMPER_RELEASE" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_UI_LBUMPER_REPEAT" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_UI_RBUMPER_PRESS" VidPid="0x346E0015" InputType="Button" Index="0" />
+      <Value Version="1" Key="INPUTCMD_UI_RBUMPER_RELEASE" VidPid="0x346E0015" InputType="Button" Index="0" />
+      <Value Version="1" Key="INPUTCMD_UI_RBUMPER_REPEAT" VidPid="0x346E0015" InputType="Button" Index="0" />
+      <Value Version="1" Key="INPUTCMD_PREV_CATEGORY" VidPid="0x346E0015" InputType="Button" Index="1" />
+      <Value Version="1" Key="INPUTCMD_NEXT_CATEGORY" VidPid="0x346E0015" InputType="Button" Index="0" />
+      <Value Version="1" Key="INPUTCMD_UI_BRICKCHALLENGES_UP" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_UI_BRICKCHALLENGES_DOWN" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_UI_BRICKCHALLENGES_LEFT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_UI_BRICKCHALLENGES_RIGHT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_MULLIGAN" VidPid="0x346E0015" InputType="Button" Index="10" />
+      <Value Version="1" Key="INPUTCMD_UI_MAP_MOVE_LEFTRIGHT">
+        <InputCmdLow VidPid="0x346E0015" InputType="Axis" Index="2" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+        <InputCmdHigh VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      </Value>
+      <Value Version="1" Key="INPUTCMD_UI_REPLAY_SPEED_RIGHT">
+        <InputCmdLow VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      </Value>
+      <Value Version="1" Key="INPUTCMD_UI_REPLAY_SPEED_LEFT">
+        <InputCmdLow VidPid="0x346E0015" InputType="Axis" Index="2" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      </Value>
+      <Value Version="1" Key="INPUTCMD_UI_MAP_MOVE_UPDOWN">
+        <InputCmdLow VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+        <InputCmdHigh VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      </Value>
+      <Value Version="1" Key="INPUTCMD_UI_X_PRESS" VidPid="0x346E0015" InputType="Button" Index="8" />
+      <Value Version="1" Key="INPUTCMD_UI_X_RELEASE" VidPid="0x346E0015" InputType="Button" Index="8" />
+      <Value Version="1" Key="INPUTCMD_UI_X_REPEAT" VidPid="0x346E0015" InputType="Button" Index="8" />
+      <Value Version="1" Key="INPUTCMD_UI_Y_PRESS" VidPid="0x346E0015" InputType="Button" Index="9" />
+      <Value Version="1" Key="INPUTCMD_UI_Y_RELEASE" VidPid="0x346E0015" InputType="Button" Index="9" />
+      <Value Version="1" Key="INPUTCMD_UI_Y_REPEAT" VidPid="0x346E0015" InputType="Button" Index="9" />
+      <Value Version="1" Key="INPUTCMD_UI_VIEW_PRESS" VidPid="0x346E0015" InputType="Button" Index="17" />
+      <Value Version="1" Key="INPUTCMD_UI_VIEW_RELEASE" VidPid="0x346E0015" InputType="Button" Index="17" />
+      <Value Version="1" Key="INPUTCMD_UI_VIEW_REPEAT" VidPid="0x346E0015" InputType="Button" Index="17" />
+    </Context>
+    <!-- Racing UI overlays -->
+    <Context Version="1" Context="INPUTCONTEXT_RACING_UI">
+      <Value Version="1" Key="INPUTCMD_ANNA_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="12" />
+      <Value Version="1" Key="INPUTCMD_PHOTO_MODE_TOGGLE" VidPid="0x346E0015" InputType="Button" Index="14" />
+      <Value Version="1" Key="INPUTCMD_QUICKCHAT_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="15" />
+      <Value Version="1" Key="INPUTCMD_RADIO_RIGHT" VidPid="0x346E0015" InputType="Button" Index="13" />
+    </Context>
+    <!-- Anna menu -->
+    <Context Version="1" Context="INPUTCONTEXT_ANNA">
+      <Value Version="1" Key="INPUTCMD_ANNA_ITEM_1" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_ANNA_ITEM_2" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_ANNA_ITEM_3" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+      <Value Version="1" Key="INPUTCMD_ANNA_ITEM_4" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+    </Context>
+    <!-- Drone / Copter -->
+    <Context Version="1" Context="INPUTCONTEXT_COPTER">
+      <Value Version="1" Key="INPUTCMD_PHOTO_MODE_TOGGLE" VidPid="0x346E0015" InputType="Button" Index="14" />
+      <Value Version="1" Key="INPUTCMD_QUICKCHAT_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="15" />
+      <Value Version="1" Key="INPUTCMD_RADIO_RIGHT" VidPid="0x346E0015" InputType="Button" Index="13" />
+    </Context>
+    <!-- Race (restricted) -->
+    <Context Version="1" Context="INPUTCONTEXT_RACING_CAMERA_ONLY">
+      <Value Version="1" Key="INPUTCMD_PAUSE_GAME" VidPid="0x346E0015" InputType="Button" Index="6" />
+      <Value Version="1" Key="INPUTCMD_SWITCH_CAMERA" VidPid="0x346E0015" InputType="Button" Index="11" />
+      <Value Version="1" Key="INPUTCMD_HORN" VidPid="0x346E0015" InputType="Button" Index="3" />
+      <Value Version="1" Key="INPUTCMD_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="4" />
+      <Value Version="1" Key="INPUTCMD_ANNA_ACTIVATE" VidPid="0x346E0015" InputType="Button" Index="12" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_TOGGLE" VidPid="0x346E0015" InputType="Button" Index="16" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_PREV" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_TELEMETRY_NEXT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+    </Context>
+    <!-- Free camera -->
+    <Context Version="1" Context="INPUTCONTEXT_FREECAM">
+      <Value Version="1" Key="INPUTCMD_UI_MAP_MOVE_LEFTRIGHT">
+        <InputCmdLow VidPid="0x346E0015" InputType="Axis" Index="2" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+        <InputCmdHigh VidPid="0x346E0015" InputType="Axis" Index="1" InvertAxis="true" InnerDeadzone="0.05" OuterDeadzone="0.95" />
+      </Value>
+    </Context>
+    <!-- Hide and Seek -->
+    <Context Version="1" Context="INPUTCONTEXT_HIDE_SEEK">
+      <Value Version="1" Key="INPUTCMD_HIDESEEK_PING_OR_CHASEBREAK" VidPid="0x346E0015" InputType="Button" Index="9" />
+    </Context>
+    <!-- Eliminator -->
+    <Context Version="1" Context="INPUTCONTEXT_ELIMINATOR_UI">
+      <Value Version="1" Key="INPUTCMD_ELIMINATOR_UPGRADECHOICE_LEFT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_ELIMINATOR_UPGRADECHOICE_DOWN" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+      <Value Version="1" Key="INPUTCMD_ELIMINATOR_UPGRADECHOICE_RIGHT" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Right" />
+    </Context>
+    <!-- Car Meets -->
+    <Context Version="1" Context="INPUTCONTEXT_CAR_MEETS">
+      <Value Version="1" Key="INPUTCMD_QUICKCHAT_ACTIVATE" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Left" />
+      <Value Version="1" Key="INPUTCMD_CAR_MEETS_PHOTO" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Up" />
+      <Value Version="1" Key="INPUTCMD_CAR_MEETS_CINEMATIC_CAM" VidPid="0x346E0015" InputType="Switch" Index="0" SwitchPosition="Down" />
+    </Context>
+  </RawGameControllerInputMappingProfile>
+</Profiles>
