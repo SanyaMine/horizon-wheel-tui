@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Claude Code (personal project config)
+.claude/
+
+# Extracted game data — ZIPs are the canonical fixtures
+inputmappingprofiles/
+wheeltunablesettingspc/
+
+# Scratch images
+image*.png
+
+# Personal scripts
+statusline.ps1
