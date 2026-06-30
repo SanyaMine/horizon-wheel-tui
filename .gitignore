@@ -18,6 +18,11 @@ wheeltunablesettingspc/
 
 # Scratch images
 image*.png
+images/
+icons/
+
+# .MD files
+docs/
 
 # Personal scripts
 statusline.ps1
