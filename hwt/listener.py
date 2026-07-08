@@ -31,16 +31,20 @@ class InputEvent:
     input_type: str                       # "Axis" | "Button" | "Switch"
     index: int
     value: float = 0.0                    # signed axis value at detection
+    delta: float = 0.0                    # signed change from resting baseline at detection
     switch_position: Optional[str] = None  # "Up"|"Down"|"Left"|"Right" for hats
     joystick_name: str = ""
 
     @property
     def invert_axis(self) -> bool:
-        return self.input_type == "Axis" and self.value < 0
+        # Direction of travel from baseline (C# `bestInvert = delta < 0`), NOT the sign of
+        # the instantaneous value — pedals rest at an axis extreme, so the value's sign at
+        # the detection sample is the baseline's sign, not the press direction.
+        return self.input_type == "Axis" and self.delta < 0
 
     def human_label(self) -> str:
         if self.input_type == "Axis":
-            return f"Axis {self.index} ({'inverted' if self.value < 0 else 'normal'})"
+            return f"Axis {self.index} ({'inverted' if self.invert_axis else 'normal'})"
         if self.input_type == "Button":
             return f"Button {self.index}"
         if self.input_type == "Switch":
@@ -159,7 +163,7 @@ class JoystickListener:
                     best_delta, best = delta, (val, i, j.get_name())
         if best is not None and abs(best_delta) > _AXIS_THRESHOLD:
             val, idx, name = best
-            self._emit(InputEvent("Axis", idx, value=val, joystick_name=name))
+            self._emit(InputEvent("Axis", idx, value=val, delta=best_delta, joystick_name=name))
 
     def _poll_buttons_and_hats(self) -> None:
         for j in self._joysticks:
