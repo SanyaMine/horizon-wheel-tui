@@ -16,7 +16,6 @@ wheeltunablesettingspc*
 # Scratch images
 image*.png
 images/
-icons/
 
 # .MD files
 docs/
