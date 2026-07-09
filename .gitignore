@@ -9,12 +9,9 @@ build/
 dist/
 *.spec
 
-# Claude Code (personal project config)
-.claude/
-
 # Extracted game data — ZIPs are the canonical fixtures
-inputmappingprofiles/
-wheeltunablesettingspc/
+inputmappingprofiles*
+wheeltunablesettingspc*
 
 # Scratch images
 image*.png
@@ -23,6 +20,3 @@ icons/
 
 # .MD files
 docs/
-
-# Personal scripts
-statusline.ps1
