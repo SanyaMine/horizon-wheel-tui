@@ -1,14 +1,19 @@
 import zipfile
-from pathlib import Path
 from xml.etree import ElementTree as ET
+
+import pytest
 
 from hwt import pack
 from hwt.profile import build_profile_xml
-from tests.fixtures import full_capture_result
+from tests.fixtures import INPUTMAPPING_ZIP, WHEELTUNABLE_ZIP, full_capture_result
 
-ROOT = Path(__file__).resolve().parent.parent
-INPUT = ROOT / "inputmappingprofiles.zip"
-WHEEL = ROOT / "wheeltunablesettingspc.zip"
+INPUT = INPUTMAPPING_ZIP
+WHEEL = WHEELTUNABLE_ZIP
+
+pytestmark = pytest.mark.skipif(
+    not (INPUT.exists() and WHEEL.exists()),
+    reason="game-data ZIPs not available (no Forza install detected)",
+)
 
 
 def test_write_input_zip_roundtrip(tmp_path):

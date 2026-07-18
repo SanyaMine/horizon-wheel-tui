@@ -9,19 +9,16 @@ build/
 dist/
 *.spec
 
-# Extracted game data — ZIPs are the canonical fixtures
+# Real game-data fixtures — copyrighted. Tests read them from repo root; copies may also
+# sit under scratch/. Never commit them, wherever they land.
 inputmappingprofiles*
 wheeltunablesettingspc*
+tests/gamedata/
 
-# Downloaded MOZA Pit House installer (fetched by download_pithouse.py; version varies)
-MOZA_Pit_House_Installer_Package_*.exe
+# Local scratch: downloads, installer unpacks, throwaway experiments (all reproducible).
+# download_pithouse.py now lives here, so it also writes the installer .exe here.
+scratch/
 
-# Scratch from unpacking the Pit House installer (regenerate anytime; not a fixture)
-_pithouse_extract/
-
-# Scratch images
-image*.png
+# Local image dumps
 images/
-
-# .MD files
-docs/
+ROADMAP.*

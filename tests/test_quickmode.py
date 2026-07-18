@@ -1,13 +1,19 @@
-from pathlib import Path
 from xml.etree import ElementTree as ET
+
+import pytest
 
 from hwt import quickmode
 from hwt.vidpid import VidPid
+from tests.fixtures import INPUTMAPPING_ZIP
 
-ROOT = Path(__file__).resolve().parent.parent
-INPUT = ROOT / "inputmappingprofiles.zip"
+INPUT = INPUTMAPPING_ZIP
 WHEEL = VidPid("346E", "0015")
 G29_ENTRY = "DefaultRawGameControllerMappingProfileLogitechG29.xml"
+
+pytestmark = pytest.mark.skipif(
+    not INPUT.exists(),
+    reason="inputmappingprofiles.zip not available (no Forza install detected)",
+)
 
 
 def test_list_profiles_includes_named_wheels():

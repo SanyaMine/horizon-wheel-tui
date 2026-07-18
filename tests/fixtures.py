@@ -2,10 +2,19 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
+from hwt import forza
 from hwt.profile import MappedInput, WheelMapResult
 from hwt.steps import STEPS
 from hwt.vidpid import VidPid
+
+# Real game-data ZIPs are copyrighted, so they can't be committed. tests/conftest.py copies
+# them here from a detected Forza install at session start; the game-data tests skip
+# themselves when the copy is absent (e.g. CI, or no Forza installed).
+GAMEDATA_DIR = Path(__file__).resolve().parent / "gamedata"
+INPUTMAPPING_ZIP = GAMEDATA_DIR / forza.INPUT_ZIP
+WHEELTUNABLE_ZIP = GAMEDATA_DIR / forza.WHEEL_ZIP
 
 WHEEL = VidPid("346E", "0015")
 

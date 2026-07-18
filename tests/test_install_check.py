@@ -1,14 +1,20 @@
 """Tests for the post-install self-check (install.verify_installed_profile)."""
 from pathlib import Path
 
+import pytest
+
 from hwt import pack
 from hwt.install import verify_installed_profile
 from hwt.profile import ProfileOptions, build_profile_xml
-from tests.fixtures import full_capture_result
+from tests.fixtures import INPUTMAPPING_ZIP, full_capture_result
 
-ROOT = Path(__file__).resolve().parent.parent
-INPUT = ROOT / "inputmappingprofiles.zip"
+INPUT = INPUTMAPPING_ZIP
 ENTRY = "DefaultRawGameControllerMappingProfileMOZACustom.xml"
+
+pytestmark = pytest.mark.skipif(
+    not INPUT.exists(),
+    reason="inputmappingprofiles.zip not available (no Forza install detected)",
+)
 
 
 def _install(media: Path, xml: bytes) -> None:
