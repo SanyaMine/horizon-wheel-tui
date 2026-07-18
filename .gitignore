@@ -13,6 +13,12 @@ dist/
 inputmappingprofiles*
 wheeltunablesettingspc*
 
+# Downloaded MOZA Pit House installer (fetched by download_pithouse.py; version varies)
+MOZA_Pit_House_Installer_Package_*.exe
+
+# Scratch from unpacking the Pit House installer (regenerate anytime; not a fixture)
+_pithouse_extract/
+
 # Scratch images
 image*.png
 images/
