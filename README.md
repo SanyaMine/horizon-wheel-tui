@@ -35,7 +35,7 @@ Prefer not to trust a binary? Run it [from source](#setup) — it's a short Pyth
 
 Both builds are packaged with [PyInstaller](https://pyinstaller.org), which bundles Python and the app into a Windows `.exe`. PyInstaller's bootloader is shared by countless legitimate apps **and** by some malware, so a handful of heuristic antivirus engines flag *the packaging method*, not anything this app does — a textbook false positive. The single-file `.exe` (which unpacks itself to a temp folder at launch) trips more engines than the portable zip.
 
-The source is fully open, the build is reproducible (`build.ps1`), and you can verify any release on [VirusTotal](https://www.virustotal.com) yourself. As always, review code that modifies game files before running it.
+The source is fully open, the build is reproducible (`python build.py`), and you can verify any release on [VirusTotal](https://www.virustotal.com) yourself. As always, review code that modifies game files before running it.
 
 ## Credits
 
@@ -76,12 +76,38 @@ game files are modified without a backup first.
 
 ## Setup
 
-```powershell
+```bash
 pip install -r requirements.txt       # runtime: textual + pygame
 pip install -r requirements-dev.txt   # + pytest
 python main.py                        # launch the TUI
 python -m pytest -q                   # run the test suite
 ```
+
+## Building from source
+
+`build.py` packages the app into distributable artifacts with [PyInstaller](https://pyinstaller.org).
+It's pure standard-library Python and runs on Windows, Linux, and macOS — the executable it
+produces is native to whatever OS you build on (a `.exe` only on Windows).
+
+```bash
+python build.py                 # build both: standalone executable + portable .zip
+python build.py --target exe    # single-file dist/horizon-wheel-tui[.exe] only
+python build.py --target zip    # portable dist/horizon-wheel-tui-portable.zip only
+python build.py --clean         # remove build/ and dist/ before building
+```
+
+Outputs land in `dist/`:
+
+- **`horizon-wheel-tui[.exe]`** — standalone single-file executable.
+- **`horizon-wheel-tui-portable.zip`** — the folder build zipped, top-level folder preserved.
+
+PyInstaller installs itself automatically on first run if it isn't already present. It logs
+progress to stderr — that's normal; success is decided by exit code, not by stderr output.
+
+**`build.py` does not cross-compile.** PyInstaller bundles the local interpreter and native
+libraries, so you get a binary for the OS you build on — a Windows `.exe` must be built on
+Windows, running it on Linux produces a Linux binary, and so on. The script is portable; the
+artifacts are per-platform.
 
 ## Requirements
 

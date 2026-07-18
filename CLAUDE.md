@@ -17,11 +17,12 @@ shipped profile and re-VID/PID it, skipping capture) and a standalone **Device S
 
 ## Commands
 
-```powershell
+```bash
 pip install -r requirements.txt       # runtime: textual + pygame
 pip install -r requirements-dev.txt   # + pytest (test suite)
 python main.py                        # launch the wizard TUI
 python -m pytest -q                   # run the test suite (31 tests)
+python build.py                       # build standalone exe + portable zip (PyInstaller; cross-platform)
 ```
 
 `tests/` is a real pytest suite (schema/golden regression, ffb, pack+verify, quickmode, presets,
