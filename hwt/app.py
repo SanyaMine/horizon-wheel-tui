@@ -29,11 +29,11 @@ from . import presets, quickmode, silence
 from .devices import DeviceInfo, get_controller_devices
 from .ffb import pick_template, pick_template_for_model
 from .forza import INPUT_ZIP, WHEEL_ZIP, find_media_folders, list_ffb_templates
-from .install import WizardState, generate_and_install
+from .install import InstallResult, WizardState, generate_and_install
 from .listener import JoystickListener
 from .pack import restore_backup
 from .profile import MappedInput, ProfileOptions, suggest_profile_name
-from .steps import STEPS, category
+from .steps import STEPS, category, control_hint
 from .vidpid import VidPid
 
 CORE_KEYS = {"STEER", "GAS", "BRAKE"}  # minimum required before install is meaningful
@@ -49,6 +49,11 @@ Screen { background: $surface; }
 .lbl { width: 22; color: $text-muted; text-align: right; padding-right: 1; }
 .field { width: 1fr; }
 Button { margin: 0 1 0 0; }
+/* Bottom button bars are direct Screen children. Textual's Horizontal defaults to height:1fr,
+   which would split the screen with the scroll area and leave a dead gap; pin them to their
+   content height so the scroll area above absorbs all slack. (#binding-split keeps its own
+   height:1fr via the higher-specificity id rule below.) */
+Screen > Horizontal { height: auto; }
 .btn-next  { background: $accent; color: $text; }
 .btn-back  { background: $primary-darken-1; }
 .btn-skip  { background: $warning-darken-1; }
@@ -415,6 +420,7 @@ class Step3Screen(Screen):
                 yield Static("", id="bind-progress")
                 yield Static("", id="prompt-cmd", classes="bind-current")
                 yield Static("", id="prompt-hint", classes="muted")
+                yield Static("", id="prompt-xbox", classes="muted")
                 yield Static("", id="prompt-status", classes="pulse")
                 yield Static("", id="prompt-result", classes="bind-done")
                 yield Static("", id="prompt-joy", classes="muted")
@@ -477,6 +483,7 @@ class Step3Screen(Screen):
         step = STEPS[idx]
         self.query_one("#prompt-cmd", Static).update(step.label)
         self.query_one("#prompt-hint", Static).update(step.instructions)
+        self.query_one("#prompt-xbox", Static).update(control_hint(step.key))
         self.query_one("#prompt-status", Static).update("⏳  Waiting for input…")
         self.query_one("#prompt-result", Static).update("")
         self.query_one("#prompt-joy", Static).update("")
@@ -515,8 +522,14 @@ class Step3Screen(Screen):
             self.app.call_from_thread(self._on_captured, step, event)
 
     def _on_captured(self, step, event) -> None:
-        role = self.app.state.role_for_joystick(event.joystick_name)
-        dev_vp = role.vid_pid.compact if role else ""
+        # Prefer the VID/PID of the device that actually produced the input (from its SDL GUID);
+        # only fall back to fuzzy name→role matching when the GUID had no usable VID/PID. This is
+        # what keeps a second device (button hub / shifter) from being mis-attributed to the
+        # wheelbase — the cause of the "2nd device not in profile" bug (issue #1).
+        dev_vp = event.device_vidpid
+        if not dev_vp:
+            role = self.app.state.role_for_joystick(event.joystick_name)
+            dev_vp = role.vid_pid.compact if role else ""
         self.app.state.bindings[step.key] = MappedInput(
             input_type=event.input_type, index=event.index,
             invert_axis=event.invert_axis, switch_position=event.switch_position,
@@ -558,6 +571,7 @@ class Step3Screen(Screen):
         self.query_one("#prompt-cmd", Static).update("All controls visited!")
         self.query_one("#prompt-hint", Static).update(
             "Click any control on the left to re-capture it, or press Next.")
+        self.query_one("#prompt-xbox", Static).update("")
         self.query_one("#prompt-status", Static).update(
             f"✔  {n} controls captured. Press Next to choose FFB and install.")
         self.query_one("#prompt-result", Static).update("")
@@ -635,11 +649,17 @@ class Step4Screen(Screen):
                     yield Input(id="profile-name", classes="field")
                 yield Checkbox("Set as default profile (auto-apply) — required for wheels Forza "
                                "doesn't natively support, e.g. Moza", id="default-profile", value=True)
-                yield Checkbox("Wider mappings — add H-pattern gears, brake-as-menu-trigger, and "
-                               "EventLab prop-placement controls (capture mode only)",
-                               id="wider-maps", value=False)
-            with Container(classes="card"):
-                yield Static("Base wheel model", classes="card-title")
+                with Container(id="wider-group"):
+                    yield Static("Wider mappings (capture mode only) — extra coverage the "
+                                 "faithful build omits. Enable any independently:", classes="muted")
+                    yield Checkbox("H-pattern gears (RACING) — only emitted if you captured gear inputs",
+                                   id="wider-gears", value=False)
+                    yield Checkbox("Brake-as-menu-trigger (left trigger in menus)",
+                                   id="wider-ltrigger", value=False)
+                    yield Checkbox("EventLab prop-placement controls",
+                                   id="wider-prop", value=False)
+            with Container(classes="card", id="base-card"):
+                yield Static("Base wheel model", id="base-title", classes="card-title")
                 yield Label("", id="base-help", classes="muted")
                 with Horizontal(classes="row"):
                     yield Label("Base model", classes="lbl")
@@ -649,12 +669,19 @@ class Step4Screen(Screen):
                 yield Static("Force Feedback template", classes="card-title")
                 yield Label("No native Moza template ships with the game — a direct-drive Fanatec "
                             "template is a good starting point for unsupported wheels.", classes="muted")
-                yield Checkbox("Use the base model's FFB template (smarter auto-pick)",
-                               id="smart-ffb", value=False, disabled=True)
+                with Horizontal(classes="row", id="ffb-model-row"):
+                    yield Label("Borrow FFB from", classes="lbl")
+                    yield Select([], id="ffb-model-sel", classes="field",
+                                 prompt="— optional: a supported wheel to auto-fill the template —")
                 with Horizontal(classes="row"):
                     yield Label("FFB INI template", classes="lbl")
                     yield Select([], id="ffb-sel", classes="field", prompt="— loading… —")
                 yield Label("", id="ffb-status", classes="muted")
+                with Horizontal(classes="row"):
+                    yield Label("Custom .ini (optional)", classes="lbl")
+                    yield Input(placeholder="Path to a custom ControllerFFB-*.ini — overrides the dropdown",
+                                id="ffb-custom", classes="field")
+                yield Label("", id="ffb-custom-status", classes="muted")
             with Container(classes="card", id="tuning-card"):
                 yield Static("Advanced axis tuning (optional)", classes="card-title")
                 yield Label("Off by default → faithful output. Enable to add steering deadzones "
@@ -687,10 +714,20 @@ class Step4Screen(Screen):
             self.query_one("#base-help", Label).update(
                 "Quick mode: pick the wheel whose shipped profile to clone and re-VID/PID. *required")
             self.query_one("#tuning-card").display = False  # tuning applies to captured profiles only
-            self.query_one("#wider-maps", Checkbox).display = False  # capture-mode only
+            self.query_one("#wider-group").display = False  # capture-mode only
+            # Quick mode already picks a clone-source wheel above; the FFB borrow dropdown would
+            # be a confusing second model selector, so hide it — FFB stays auto/manual/custom.
+            self.query_one("#ffb-model-row").display = False
         else:
-            self.query_one("#base-help", Label).update(
-                "Optional: pick a supported wheel to borrow its FFB template (does not change mappings).")
+            # Capture mode: mappings came from Step 3, so the base-model card has no job here.
+            # Its only leftover use (auto-pick an FFB template) now lives inside the FFB card.
+            self.query_one("#base-card").display = False
+        # A saved custom template is a filesystem path (has a separator / is absolute), unlike
+        # a bare ZIP entry name — prefill the field so presets round-trip visibly. Setting the
+        # value fires on_input_changed, which restores the status + state.ffb_template_entry.
+        saved = s.ffb_template_entry
+        if saved and ("\\" in saved or "/" in saved or Path(saved).is_absolute()):
+            self.query_one("#ffb-custom", Input).value = saved
         self._show_summary()
         self._load_base_models()
         self._load_templates()
@@ -725,6 +762,11 @@ class Step4Screen(Screen):
     def _apply_base_models(self, profs: list) -> None:
         self._base_profiles = profs
         s = self.app.state
+        # Capture mode's FFB-borrow dropdown lists the same wheels, with a "none" default so the
+        # generic pick stays in force until the user opts in. (Only shown in capture mode.)
+        model_opts = [("— none / generic FFB —", "")]
+        model_opts += [(b.user_facing_name or b.entry, b.entry) for b in profs]
+        self.query_one("#ffb-model-sel", Select).set_options(model_opts)
         options = ([] if s.mode == "quick" else [("— none / generic FFB —", "")])
         options += [(b.user_facing_name or b.entry, b.entry) for b in profs]
         sel = self.query_one("#base-sel", Select)
@@ -768,29 +810,39 @@ class Step4Screen(Screen):
         if best:
             sel.value = best
             self.query_one("#ffb-status", Label).update(note)
-            s.ffb_template_entry = best
+            if not self._custom_ffb():  # a custom path, if set, owns ffb_template_entry
+                s.ffb_template_entry = best
 
-    def _selected_base(self):
-        val = str(self.query_one("#base-sel", Select).value or "")
+    def _selected_ffb_model(self):
+        """The wheel model chosen in the capture-mode FFB-borrow dropdown, or None."""
+        val = str(self.query_one("#ffb-model-sel", Select).value or "")
         return next((b for b in self._base_profiles if b.entry == val), None)
 
+    def _custom_ffb(self) -> str:
+        """Trimmed custom-template path, or "" if the field is empty/absent. A non-empty
+        value takes precedence over the ZIP dropdown everywhere below."""
+        try:
+            return self.query_one("#ffb-custom", Input).value.strip()
+        except NoMatches:
+            return ""
+
     def _recompute_ffb(self) -> None:
-        """Honor the OPTIONAL 'smart FFB' toggle; otherwise keep the faithful generic pick."""
-        if not self._ffb_entries:
+        """Auto-fill the FFB template from the optionally chosen wheel model; a blank/no match
+        falls back to the faithful generic pick. Skipped when a custom path is active."""
+        if not self._ffb_entries or self._custom_ffb():  # custom path overrides auto-pick
             return
         sel = self.query_one("#ffb-sel", Select)
         status = self.query_one("#ffb-status", Label)
-        smart = self.query_one("#smart-ffb", Checkbox).value
-        base = self._selected_base()
-        if smart and base and len(base.primary_vidpid) == 8:
-            vp = VidPid(base.primary_vidpid[:4], base.primary_vidpid[4:])
+        model = self._selected_ffb_model()
+        if model and len(model.primary_vidpid) == 8:
+            vp = VidPid(model.primary_vidpid[:4], model.primary_vidpid[4:])
             cand = pick_template_for_model(self._ffb_entries, vp)
             if cand:
                 sel.value = cand
                 self.app.state.ffb_template_entry = cand
-                status.update(f"Using {base.user_facing_name} FFB: {cand}")
+                status.update(f"Using {model.user_facing_name} FFB: {cand}")
                 return
-            status.update(f"No FFB template matches {base.user_facing_name}; using generic.")
+            status.update(f"No FFB template matches {model.user_facing_name}; using generic.")
         best = pick_template(self._ffb_entries, self.app.state.wheelbase_vidpid())
         if best:
             sel.value = best
@@ -800,17 +852,34 @@ class Step4Screen(Screen):
         if event.value is Select.BLANK:
             return
         if event.select.id == "ffb-sel":
-            self.app.state.ffb_template_entry = str(event.value)
+            if not self._custom_ffb():  # don't let the dropdown clobber an active custom path
+                self.app.state.ffb_template_entry = str(event.value)
+        elif event.select.id == "ffb-model-sel":
+            self._recompute_ffb()  # borrow FFB from the chosen wheel model (or revert to generic)
         elif event.select.id == "base-sel":
-            self.app.state.base_profile_entry = str(event.value)
-            base = self._selected_base()
-            self.query_one("#smart-ffb", Checkbox).disabled = not (base and len(base.primary_vidpid) == 8)
-            if self.app.state.mode != "quick":
-                self._recompute_ffb()
+            self.app.state.base_profile_entry = str(event.value)  # quick-mode clone source
 
-    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        if event.checkbox.id == "smart-ffb":
-            self._recompute_ffb()
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Custom FFB path field: non-empty wins over the dropdown; empty reverts to it.
+        We store even a not-yet-existing path so install-time validation can block on it."""
+        if event.input.id != "ffb-custom":
+            return
+        status = self.query_one("#ffb-custom-status", Label)
+        val = event.value.strip()
+        if not val:  # cleared → hand control back to the auto-picked dropdown entry
+            status.set_classes("muted")
+            status.update("")
+            sel_val = self.query_one("#ffb-sel", Select).value
+            if sel_val is not Select.BLANK:
+                self.app.state.ffb_template_entry = str(sel_val)
+            return
+        self.app.state.ffb_template_entry = val
+        if Path(val).is_file():
+            status.set_classes("ok")
+            status.update(f"✔  Using custom template: {Path(val).name}")
+        else:
+            status.set_classes("err")
+            status.update("✘  File not found — fix the path or clear it to use the dropdown.")
 
     def _build_options(self) -> Optional[ProfileOptions]:
         """Assemble ProfileOptions from the UI. Returns None only when nothing is enabled
@@ -824,11 +893,14 @@ class Step4Screen(Screen):
         default_on = _checked("#default-profile")
         if self.app.state.mode == "quick":
             return ProfileOptions(is_default_profile=default_on) if default_on else None
-        wider_on = _checked("#wider-maps")
+        gears = _checked("#wider-gears")
+        left_trigger = _checked("#wider-ltrigger")
+        prop = _checked("#wider-prop")
         tune_on = _checked("#tune-enable")
-        if not (default_on or wider_on or tune_on):
+        if not (default_on or gears or left_trigger or prop or tune_on):
             return None
-        opts = ProfileOptions(is_default_profile=default_on, wider_mappings=wider_on)
+        opts = ProfileOptions(is_default_profile=default_on, wider_gears=gears,
+                              wider_left_trigger=left_trigger, wider_prop_placement=prop)
         if tune_on:
             try:
                 opts.steer_deadzones_around_center = _checked("#tune-dz")
@@ -851,8 +923,8 @@ class Step4Screen(Screen):
         _log = lambda msg: self.app.call_from_thread(log.write_line, msg)
         try:
             self.app.call_from_thread(self.query_one("#install", Button).__setattr__, "disabled", True)
-            generate_and_install(self.app.state, _log)
-            self.app.call_from_thread(self.app.push_screen, DoneScreen())
+            result = generate_and_install(self.app.state, _log)
+            self.app.call_from_thread(self.app.push_screen, DoneScreen(result))
         except Exception as exc:
             _log(f"✘  Error: {exc}")
             self.app.call_from_thread(self.query_one("#step4-err", Label).update, f"✘  {exc}")
@@ -879,6 +951,10 @@ class Step4Screen(Screen):
                 return
             if not self.app.state.ffb_template_entry:
                 self.query_one("#step4-err", Label).update("⚠  Select an FFB template first.")
+                return
+            custom = self._custom_ffb()
+            if custom and not Path(custom).is_file():
+                self.query_one("#step4-err", Label).update("⚠  Custom FFB file not found.")
                 return
             self._run_install()
 
@@ -983,6 +1059,10 @@ class SilenceScreen(Screen):
 
 # ════════════════════════════════════════════════════════════════════════════════════
 class DoneScreen(Screen):
+    def __init__(self, result: Optional[InstallResult] = None) -> None:
+        super().__init__()
+        self._result = result
+
     def compose(self) -> ComposeResult:
         yield Header()
         with Container(id="welcome-box"):
@@ -991,9 +1071,7 @@ class DoneScreen(Screen):
                          "Launch Forza Horizon and select your profile in Controls.",
                          classes="welcome-body")
             yield Static("")
-            s = self.app.state
-            yield Static(f"Media folder:  {s.media_folder}\nBackup:        {s.media_folder}\\HST-BACKUP\\",
-                         classes="welcome-body")
+            yield Static(self._files_report(), classes="welcome-body")
             yield Static("", id="restore-status", classes="welcome-body")
             yield Static("")
             with Horizontal():
@@ -1002,6 +1080,23 @@ class DoneScreen(Screen):
                 yield Button("⟲  Restore Backup", id="restore", classes="btn-skip")
                 yield Button("Quit", id="quit", classes="btn-danger")
         yield Footer()
+
+    def _files_report(self) -> str:
+        """Human-readable list of exactly what the install wrote: the two archives replaced in
+        the media folder and the entry ADDED inside each (alongside the stock defaults)."""
+        r = self._result
+        if r is None:  # defensive — DoneScreen is always constructed with a result today
+            s = self.app.state
+            return f"Media folder:  {s.media_folder}\nBackup:        {s.media_folder}\\HST-BACKUP\\"
+        return (
+            f"Installed into:  {r.media_folder}\n"
+            f"Originals backed up to:  {r.backup_dir}\n"
+            f"\nArchives updated (entry added alongside the stock defaults):\n"
+            f"  {r.input_zip}\n"
+            f"      + {r.profile_entry}   (your mapping profile)\n"
+            f"  {r.wheel_zip}\n"
+            f"      + {r.ini_entry}   (your FFB template)"
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         bid = event.button.id

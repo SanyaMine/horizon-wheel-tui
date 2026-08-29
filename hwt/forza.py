@@ -117,5 +117,10 @@ def list_ffb_templates(wheel_zip: str | Path) -> list[str]:
 
 
 def read_ffb_ini(wheel_zip: str | Path, entry: str) -> str:
+    # `entry` is normally a ZIP entry name, but the wizard also lets the user point at an
+    # external custom template on disk (e.g. a hand-tuned Moza preset). A real file wins.
+    p = Path(entry)
+    if p.is_file():
+        return p.read_text(encoding="utf-8-sig")
     with zipfile.ZipFile(wheel_zip) as zf:
         return zf.read(entry).decode("utf-8-sig")

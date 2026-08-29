@@ -61,11 +61,12 @@ class ProfileOptions:
     # id from the wheel's VID/PID so re-installs overwrite the same profile in place rather
     # than spawning a fresh random one each run. Set this to pin a specific id (presets).
     profile_id: Optional[str] = None
-    # When True, emit the extra coverage that shipped profiles have but the faithful 26-input
-    # build omits: H-pattern gears (RACING), brake-as-left-trigger (UI), and the whole
-    # PROP_PLACEMENT_UI context. Off by default → output byte-identical to the faithful build
-    # (golden-file guarded). Gears only appear if their inputs were actually captured.
-    wider_mappings: bool = False
+    # The three OPT-IN "wider mappings" sub-features — extra coverage shipped profiles have
+    # but the faithful 26-input build omits. Each is independent; all default off → output
+    # byte-identical to the faithful build (golden-file guarded).
+    wider_gears: bool = False           # H-pattern gears in RACING (only if gear inputs captured)
+    wider_left_trigger: bool = False    # brake-as-left-trigger in menus (UI context)
+    wider_prop_placement: bool = False  # the whole PROP_PLACEMENT_UI (EventLab) context
 
 
 # Namespace for deterministic profile ids — arbitrary fixed UUID so the mapping
@@ -98,13 +99,15 @@ def build_profile_xml(result: WheelMapResult, options: "ProfileOptions | None" =
     })
 
     m = result.inputs
-    wider = bool(options and options.wider_mappings)
+    gears = bool(options and options.wider_gears)
+    left_trigger = bool(options and options.wider_left_trigger)
+    prop_placement = bool(options and options.wider_prop_placement)
 
-    racing = _build_racing(m, vid, wider)
+    racing = _build_racing(m, vid, gears)
     profile.append(ET.Comment(" Race "))
     profile.append(racing)
     profile.append(ET.Comment(" UI "))
-    profile.append(_build_ui(m, vid, wider))
+    profile.append(_build_ui(m, vid, left_trigger))
     profile.append(ET.Comment(" Racing UI overlays "))
     profile.append(_build_racing_ui(m, vid))
     profile.append(ET.Comment(" Anna menu "))
@@ -121,7 +124,7 @@ def build_profile_xml(result: WheelMapResult, options: "ProfileOptions | None" =
     profile.append(_build_eliminator(m, vid))
     profile.append(ET.Comment(" Car Meets "))
     profile.append(_build_car_meets(m, vid))
-    if wider:
+    if prop_placement:
         profile.append(ET.Comment(" Prop Placement (EventLab) "))
         profile.append(_build_prop_placement(m, vid))
 
@@ -213,7 +216,7 @@ def _input_cmd(tag: str, inp: MappedInput, vid: str, axis_dz: bool) -> ET.Elemen
 # ════════════════════════════════════════════════════════════════════════════════════
 #  The 10 context builders (mirror WheelMapWizard.cs:539-729)
 # ════════════════════════════════════════════════════════════════════════════════════
-def _build_racing(m: dict[str, MappedInput], vid: str, wider: bool = False) -> ET.Element:
+def _build_racing(m: dict[str, MappedInput], vid: str, gears: bool = False) -> ET.Element:
     ctx = _ctx("INPUTCONTEXT_RACING")
     _add(ctx, m, "GAS",        "INPUTCMD_GAS",        vid)
     _add(ctx, m, "BRAKE",      "INPUTCMD_BRAKE",      vid)
@@ -234,7 +237,7 @@ def _build_racing(m: dict[str, MappedInput], vid: str, wider: bool = False) -> E
     _add(ctx, m, "NAV_LEFT",   "INPUTCMD_TELEMETRY_PREV",  vid)
     _add(ctx, m, "NAV_RIGHT",  "INPUTCMD_TELEMETRY_NEXT",  vid)
     _add(ctx, m, "MAP",        "INPUTCMD_OPEN_MAP",        vid)
-    if wider:
+    if gears:
         # H-pattern shifter gears (only emitted if the gear inputs were captured).
         _add(ctx, m, "GEAR_R", "INPUTCMD_GEAR_REVERSE", vid)
         _add(ctx, m, "GEAR_1", "INPUTCMD_GEAR_FIRST",   vid)
@@ -247,7 +250,7 @@ def _build_racing(m: dict[str, MappedInput], vid: str, wider: bool = False) -> E
     return ctx
 
 
-def _build_ui(m: dict[str, MappedInput], vid: str, wider: bool = False) -> ET.Element:
+def _build_ui(m: dict[str, MappedInput], vid: str, left_trigger: bool = False) -> ET.Element:
     ctx = _ctx("INPUTCONTEXT_UI")
     # D-Pad
     _add(ctx, m, "NAV_UP",    "INPUTCMD_UI_DPAD_UP_PRESS",    vid)
@@ -276,7 +279,7 @@ def _build_ui(m: dict[str, MappedInput], vid: str, wider: bool = False) -> ET.El
     # Right trigger (gas axis in menus)
     for cmd in ("INPUTCMD_UI_RTRIGGER_PRESS", "INPUTCMD_UI_RTRIGGER_RELEASE", "INPUTCMD_UI_RTRIGGER_REPEAT"):
         _add(ctx, m, "GAS", cmd, vid, inner_dz="0.05", outer_dz="0.95")
-    if wider:
+    if left_trigger:
         # Left trigger (brake axis in menus) — mirror of the right trigger above.
         for cmd in ("INPUTCMD_UI_LTRIGGER_PRESS", "INPUTCMD_UI_LTRIGGER_RELEASE", "INPUTCMD_UI_LTRIGGER_REPEAT"):
             _add(ctx, m, "BRAKE", cmd, vid, inner_dz="0.05", outer_dz="0.95")

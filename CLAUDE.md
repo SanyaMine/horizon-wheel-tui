@@ -37,7 +37,7 @@ device silencing, and install only work on Windows; profile/INI/ZIP generation i
   `to_xml_string()` = `"0x"+compact`. Mirrors the C# `VidPid` struct.
 - **`steps.py`** — `STEPS`: the canonical 26 `MappingStep`s (logical key, label, instructions,
   `kind` = "Axis"/"Button"), verbatim from `WheelMapWizard.cs`, **plus** 8 optional trailing
-  `GEAR_*` steps (`GEAR_KEYS`) for H-pattern shifters — emitted only under `wider_mappings`. The
+  `GEAR_*` steps (`GEAR_KEYS`) for H-pattern shifters — emitted only under `wider_gears`. The
   logical keys (`STEER`, `GAS`, `NAV_UP`…) are **not** the XML keys — they are expanded in `profile.py`.
 - **`profile.py`** — **the core.** `build_profile_xml(result, options=None)` is a 1:1 port of C#
   `WheelMapWizard.BuildXmlDocument` + its ten `Build*Context` helpers. Each captured logical input
@@ -49,9 +49,10 @@ device silencing, and install only work on Windows; profile/INI/ZIP generation i
   `options=None` is byte-identical to the faithful output (guarded by a golden-file test). The
   profile `Id` is now **deterministic** — `stable_profile_id(vidpid)` (a `uuid5` of the VID/PID)
   so re-installs overwrite the same profile instead of spawning a fresh random GUID each run;
-  `ProfileOptions.profile_id` pins an explicit id (persisted in presets). `ProfileOptions.wider_mappings`
-  (opt-in, off by default) adds the coverage shipped profiles have but the faithful build omits:
-  H-pattern **gears** (RACING), brake-as-**left-trigger** (UI), and the whole **`PROP_PLACEMENT_UI`**
+  `ProfileOptions.profile_id` pins an explicit id (persisted in presets). Three independent,
+  opt-in (off by default) "wider mappings" sub-flags add coverage shipped profiles have but the
+  faithful build omits: `wider_gears` → H-pattern **gears** (RACING), `wider_left_trigger` →
+  brake-as-**left-trigger** (UI), and `wider_prop_placement` → the whole **`PROP_PLACEMENT_UI`**
   context (`_build_prop_placement`, mapped semantically from already-captured inputs — not in upstream
   C#). Gears come from the optional trailing `GEAR_*` steps in `steps.py` (`GEAR_KEYS`).
 - **`quickmode.py`** — Quick mode. Port of C# `XmlProfileEditor`: `list_profiles(input_zip)` lists
@@ -148,7 +149,7 @@ for better feel. `python -m pytest -q` is the primary gate; it covers:
 1. Full 26-input profile re-parsed — 10 contexts, header `0x` VID/PID, per-Value `0x` VID/PID,
    Switch d-pad, axis deadzones, composite map-move pairs — **and** the golden-file regression that
    `options=None` / `ProfileOptions()` output is byte-identical (so the optional knobs — tuning, stable
-   id, `wider_mappings` — can't silently drift the faithful default). Plus the `wider_mappings` add-ons
+   id, wider-mapping sub-flags — can't silently drift the faithful default). Plus the wider-mapping add-ons
    (gears, left-trigger, prop-placement) and the post-install self-check.
 2. `set_vendor_product` yields a single `VendorProduct 0x…` line for both `0x`-prefixed and the
    generic `0000000000` template.

@@ -69,8 +69,9 @@ def test_profile_id_is_stable_for_same_wheel():
 
 
 def test_wider_mappings_adds_gears_pp_ltrigger():
-    prof = ET.fromstring(build_profile_xml(full_capture_result(),
-                                           ProfileOptions(wider_mappings=True)))[0]
+    prof = ET.fromstring(build_profile_xml(
+        full_capture_result(),
+        ProfileOptions(wider_gears=True, wider_left_trigger=True, wider_prop_placement=True)))[0]
     # H-pattern gears in RACING
     assert _find(prof, "INPUTCONTEXT_RACING", "INPUTCMD_GEAR_FIRST") is not None
     assert _find(prof, "INPUTCONTEXT_RACING", "INPUTCMD_GEAR_REVERSE") is not None
@@ -82,6 +83,27 @@ def test_wider_mappings_adds_gears_pp_ltrigger():
     assert "INPUTCONTEXT_PROP_PLACEMENT_UI" in names
     pp = _find(prof, "INPUTCONTEXT_PROP_PLACEMENT_UI", "INPUTCMD_PP_TRANSFORM_UP")
     assert pp is not None and pp.get("InputType") == "Switch"
+
+
+def test_wider_sub_features_are_independent():
+    """Each of the three sub-flags adds ONLY its own coverage, nothing else."""
+    def prof(**kw):
+        return ET.fromstring(build_profile_xml(full_capture_result(), ProfileOptions(**kw)))[0]
+
+    gears_only = prof(wider_gears=True)
+    assert _find(gears_only, "INPUTCONTEXT_RACING", "INPUTCMD_GEAR_FIRST") is not None
+    assert _find(gears_only, "INPUTCONTEXT_UI", "INPUTCMD_UI_LTRIGGER_PRESS") is None
+    assert "INPUTCONTEXT_PROP_PLACEMENT_UI" not in [c.get("Context") for c in gears_only if c.tag == "Context"]
+
+    ltrig_only = prof(wider_left_trigger=True)
+    assert _find(ltrig_only, "INPUTCONTEXT_UI", "INPUTCMD_UI_LTRIGGER_PRESS") is not None
+    assert _find(ltrig_only, "INPUTCONTEXT_RACING", "INPUTCMD_GEAR_FIRST") is None
+    assert "INPUTCONTEXT_PROP_PLACEMENT_UI" not in [c.get("Context") for c in ltrig_only if c.tag == "Context"]
+
+    prop_only = prof(wider_prop_placement=True)
+    assert "INPUTCONTEXT_PROP_PLACEMENT_UI" in [c.get("Context") for c in prop_only if c.tag == "Context"]
+    assert _find(prop_only, "INPUTCONTEXT_RACING", "INPUTCMD_GEAR_FIRST") is None
+    assert _find(prop_only, "INPUTCONTEXT_UI", "INPUTCMD_UI_LTRIGGER_PRESS") is None
 
 
 def test_wider_mappings_off_is_faithful():

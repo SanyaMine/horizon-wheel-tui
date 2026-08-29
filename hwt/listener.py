@@ -17,6 +17,8 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
+from .vidpid import VidPid
+
 # Headless SDL — no window/audio (must be set before pygame imports SDL)
 os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -34,6 +36,7 @@ class InputEvent:
     delta: float = 0.0                    # signed change from resting baseline at detection
     switch_position: Optional[str] = None  # "Up"|"Down"|"Left"|"Right" for hats
     joystick_name: str = ""
+    device_vidpid: str = ""                # capturing device's compact "VVVVPPPP" (from SDL GUID)
 
     @property
     def invert_axis(self) -> bool:
@@ -63,6 +66,7 @@ class JoystickListener:
         self._captured: Optional[InputEvent] = None
         self._joysticks: list = []
         self._names: list[str] = []
+        self._vidpids: dict[int, str] = {}   # instance_id -> compact "VVVVPPPP" (or "")
         self._baselines: dict[int, list[float]] = {}
 
     # ── Lifecycle ─────────────────────────────────────────────────────────────────
@@ -118,6 +122,7 @@ class JoystickListener:
             joysticks.append(j)
         self._joysticks = joysticks
         self._names = [j.get_name() for j in joysticks]
+        self._vidpids = {j.get_instance_id(): _guid_vidpid(j) for j in joysticks}
         self._pygame = pygame
         self._snapshot_baselines()
 
@@ -152,7 +157,7 @@ class JoystickListener:
 
     def _poll_axes(self) -> None:
         best_delta = 0.0
-        best = None  # (value, index, name)
+        best = None  # (value, index, name, vidpid)
         for j in self._joysticks:
             bl = self._baselines.get(j.get_instance_id(), [])
             for i in range(j.get_numaxes()):
@@ -160,24 +165,28 @@ class JoystickListener:
                 base = bl[i] if i < len(bl) else 0.0
                 delta = val - base
                 if abs(delta) > abs(best_delta):
-                    best_delta, best = delta, (val, i, j.get_name())
+                    best_delta = delta
+                    best = (val, i, j.get_name(), self._vidpids.get(j.get_instance_id(), ""))
         if best is not None and abs(best_delta) > _AXIS_THRESHOLD:
-            val, idx, name = best
-            self._emit(InputEvent("Axis", idx, value=val, delta=best_delta, joystick_name=name))
+            val, idx, name, vp = best
+            self._emit(InputEvent("Axis", idx, value=val, delta=best_delta,
+                                  joystick_name=name, device_vidpid=vp))
 
     def _poll_buttons_and_hats(self) -> None:
         for j in self._joysticks:
             name = j.get_name()
+            vp = self._vidpids.get(j.get_instance_id(), "")
             for i in range(j.get_numbuttons()):
                 if j.get_button(i):
-                    self._emit(InputEvent("Button", i, joystick_name=name))
+                    self._emit(InputEvent("Button", i, joystick_name=name, device_vidpid=vp))
                     return
             for i in range(j.get_numhats()):
                 hx, hy = j.get_hat(i)
                 pos = ("Up" if hy > 0 else "Down" if hy < 0 else
                        "Right" if hx > 0 else "Left" if hx < 0 else None)
                 if pos:
-                    self._emit(InputEvent("Switch", 0, switch_position=pos, joystick_name=name))
+                    self._emit(InputEvent("Switch", 0, switch_position=pos,
+                                          joystick_name=name, device_vidpid=vp))
                     return
 
     def _emit(self, event: InputEvent) -> None:
@@ -185,3 +194,15 @@ class JoystickListener:
             self._captured = event
             self._active = False
             self._done.set()
+
+
+def _guid_vidpid(joystick) -> str:
+    """Compact 'VVVVPPPP' for a pygame joystick from its SDL GUID, or '' if unavailable.
+
+    get_guid exists on pygame 2.x; wrapped defensively so a driver/edge case that raises (or a
+    GUID without a usable VID/PID) degrades to name matching rather than crashing capture."""
+    try:
+        vp = VidPid.from_sdl_guid(joystick.get_guid())
+    except Exception:
+        return ""
+    return vp.compact if vp else ""

@@ -120,7 +120,9 @@ def _opts_to_dict(o: Optional[ProfileOptions]) -> Optional[dict]:
             "pedal_outer_deadzone": o.pedal_outer_deadzone,
             "is_default_profile": o.is_default_profile,
             "profile_id": o.profile_id,
-            "wider_mappings": o.wider_mappings}
+            "wider_gears": o.wider_gears,
+            "wider_left_trigger": o.wider_left_trigger,
+            "wider_prop_placement": o.wider_prop_placement}
 
 
 def _opts_from_dict(d: Optional[dict]) -> Optional[ProfileOptions]:
@@ -134,4 +136,7 @@ def _opts_from_dict(d: Optional[dict]) -> Optional[ProfileOptions]:
         pedal_outer_deadzone=d.get("pedal_outer_deadzone", "1.0"),
         is_default_profile=bool(d.get("is_default_profile", False)),
         profile_id=d.get("profile_id"),
-        wider_mappings=bool(d.get("wider_mappings", False)))
+        # Legacy presets stored a single `wider_mappings` = all three; fall back to it per-flag.
+        wider_gears=bool(d.get("wider_gears", d.get("wider_mappings", False))),
+        wider_left_trigger=bool(d.get("wider_left_trigger", d.get("wider_mappings", False))),
+        wider_prop_placement=bool(d.get("wider_prop_placement", d.get("wider_mappings", False))))

@@ -61,7 +61,20 @@ class WizardState:
         return self.wheelbase
 
 
-def generate_and_install(state: WizardState, log: Callable[[str], None]) -> Path:
+@dataclass
+class InstallResult:
+    """What the install actually wrote, so the Done screen can show it. The two archives are
+    replaced in the media folder (originals copied to HST-BACKUP); inside each we ADD one entry
+    alongside the stock defaults."""
+    media_folder: str
+    backup_dir: str
+    input_zip: str       # archive name, e.g. "inputmappingprofiles.zip"
+    wheel_zip: str       # archive name, e.g. "wheeltunablesettingspc.zip"
+    profile_entry: str   # profile XML added inside input_zip
+    ini_entry: str       # FFB INI added inside wheel_zip
+
+
+def generate_and_install(state: WizardState, log: Callable[[str], None]) -> InstallResult:
     out = Path(state.output_folder)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -116,7 +129,14 @@ def generate_and_install(state: WizardState, log: Callable[[str], None]) -> Path
         raise RuntimeError("Post-install check failed: " + "; ".join(problems))
     log("✔  Self-check passed.")
     log(f"Installed. Backup at: {bf}")
-    return bf
+    return InstallResult(
+        media_folder=str(state.media_folder),
+        backup_dir=str(bf),
+        input_zip=INPUT_ZIP,
+        wheel_zip=WHEEL_ZIP,
+        profile_entry=profile_name,
+        ini_entry=ini_name,
+    )
 
 
 def verify_installed_profile(media_folder: str | Path, profile_name: str,

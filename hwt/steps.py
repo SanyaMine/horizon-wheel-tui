@@ -68,6 +68,91 @@ STEPS: list[MappingStep] = [
 GEAR_KEYS = ("GEAR_R", "GEAR_1", "GEAR_2", "GEAR_3", "GEAR_4", "GEAR_5", "GEAR_6", "GEAR_7")
 
 
+# Where each logical control sits on Forza Horizon 6's DEFAULT Xbox-controller layout, shown as
+# a dim hint during capture so the user knows what they're binding. A missing key renders no hint.
+#
+# These are FH6 "Default Layout 1" (the game ships several selectable layouts; Game8/TechWiser
+# document Layout 1). Verified Aug 2026 against Game8, TechWiser and SCUF control guides:
+#   - Shift Up = B; Shift Down ships UNBOUND (manual drivers must bind it) — confirmed by all three.
+#   - Quickchat = Forza LINK = D-pad ← (context-shared with Telemetry Previous).
+#   - Telemetry toggle has no default button.
+#   - Map vs Pause: guides disagree on View (⧉) vs Menu (☰); we follow docs/fh6-xbox-controls.svg
+#     (View = map, Menu = pause). The adjacent icons let the user find either regardless.
+XBOX_HINTS: dict[str, str] = {
+    # Driving
+    "STEER":      "Left stick",
+    "GAS":        "RT · right trigger",
+    "BRAKE":      "LT · left trigger",
+    "CLUTCH":     "LB · left bumper",
+    "SHIFT_UP":   "B",
+    "SHIFT_DOWN": "unbound by default",
+    "HANDBRAKE":  "A",
+    "HORN":       "Right stick (click)",
+    # Menu / UI
+    "CONFIRM":    "A",
+    "CANCEL":     "B",
+    "PAUSE":      "Menu (☰)",
+    "BACK":       "B",
+    "BTN_X":      "X",
+    "BTN_Y":      "Y",
+    # Navigation
+    "NAV_UP":     "D-pad ↑",
+    "NAV_DOWN":   "D-pad ↓",
+    "NAV_LEFT":   "D-pad ←",
+    "NAV_RIGHT":  "D-pad →",
+    "MAP":        "View (⧉) · open map",
+    # Actions
+    "REWIND":     "Y",
+    "CAMERA":     "RB · right bumper",
+    "ANNA":       "D-pad ↓ · ANNA",
+    "RADIO":      "D-pad → · radio next",
+    "PHOTO":      "D-pad ↑ · photo mode",
+    "QUICKCHAT":  "D-pad ← · Forza LINK",
+    "TELEMETRY":  "no default binding",
+}
+
+
+# H-pattern shifter GATE, as a tiny ASCII diagram drawn during gear capture with the current gear
+# highlighted in (parens). Two layouts users pick between, generalised from the 5-speed reference
+# diagrams (docs/Manual_Layout.svg.webp standard, docs/Manual_Dogleg.svg.webp dogleg) to the full
+# 7-speed + R gate. Top/bottom rows across four columns:
+#   Standard: 1 3 5 7 / 2 4 6 R      Dogleg: R 2 4 6 / 1 3 5 7
+_GATE_STD = (["1", "3", "5", "7"], ["2", "4", "6", "R"])   # (top row, bottom row)
+_GATE_DOG = (["R", "2", "4", "6"], ["1", "3", "5", "7"])
+
+
+def xbox_hint(key: str) -> str:
+    """Default FH6 Xbox-layout location for a logical key (see XBOX_HINTS), '' if none."""
+    return XBOX_HINTS.get(key, "")
+
+
+def _gate_diagram(active: str) -> str:
+    """Small side-by-side ASCII gate for both layouts, `active` gear label wrapped in (parens).
+    Fixed 3-char cells keep the columns aligned whether or not a cell is highlighted."""
+    def cell(lbl: str) -> str:
+        return f"({lbl})" if lbl == active else f" {lbl} "
+    def row(cells: list[str]) -> str:
+        return "".join(cell(c) for c in cells)
+    return (
+        "🔧 H-shifter gate — ( ) = this gear\n"
+        "   standard        dogleg\n"
+        f"  {row(_GATE_STD[0])}    {row(_GATE_DOG[0])}\n"
+        f"  {row(_GATE_STD[1])}    {row(_GATE_DOG[1])}"
+    )
+
+
+def control_hint(key: str) -> str:
+    """Full capture-prompt hint for a logical key ('' when there's none).
+
+    Gears render an ASCII shifter gate (standard + dogleg) with the current gear highlighted;
+    everything else is a one-line default FH6 Xbox-button hint.
+    """
+    if key in GEAR_KEYS:
+        return _gate_diagram(key.split("_", 1)[1])  # "GEAR_R"->"R", "GEAR_3"->"3"
+    h = XBOX_HINTS.get(key, "")
+    return f"🎮 Xbox default: {h}" if h else ""
+
+
 def category(key: str) -> str:
     """Group label for a logical key (WheelMapWizard.cs:302-310)."""
     if key in ("STEER", "GAS", "BRAKE", "CLUTCH", "SHIFT_UP", "SHIFT_DOWN", "HANDBRAKE", "HORN"):

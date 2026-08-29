@@ -15,7 +15,9 @@ def _state():
                                                    steer_inner_deadzone="0.02",
                                                    is_default_profile=True,
                                                    profile_id="PINNED-ID",
-                                                   wider_mappings=True),
+                                                   wider_gears=True,
+                                                   wider_left_trigger=True,
+                                                   wider_prop_placement=True),
                     silenced_ids=["HID\\X"])
     s.bindings["STEER"] = MappedInput("Axis", 0, invert_axis=False, device_vidpid="346E0015")
     s.bindings["NAV_UP"] = MappedInput("Switch", 0, switch_position="Up", device_vidpid="346E0015")
@@ -37,7 +39,9 @@ def test_preset_roundtrip(tmp_path):
     assert r.profile_options.steer_inner_deadzone == "0.02"
     assert r.profile_options.is_default_profile is True
     assert r.profile_options.profile_id == "PINNED-ID"
-    assert r.profile_options.wider_mappings is True
+    assert r.profile_options.wider_gears is True
+    assert r.profile_options.wider_left_trigger is True
+    assert r.profile_options.wider_prop_placement is True
     assert r.silenced_ids == ["HID\\X"]
     assert r.wheelbase is s.wheelbase  # re-resolved to the live device object
     assert set(r.bindings) == {"STEER", "NAV_UP", "CONFIRM"}
@@ -52,3 +56,18 @@ def test_preset_reconstructs_absent_device(tmp_path):
     assert r.wheelbase is not None
     assert r.wheelbase.vid_pid == VidPid("346E", "0015")
     assert r.wheelbase.name == "MOZA Windows Driver"
+
+
+def test_legacy_wider_mappings_maps_to_all_three(tmp_path):
+    """Presets saved before the split stored a single wider_mappings=true — it must fan out
+    to all three sub-flags on load so old presets keep their behavior."""
+    import json
+    p = tmp_path / "preset.json"
+    p.write_text(json.dumps({
+        "version": 1,
+        "profile_options": {"wider_mappings": True},
+    }), encoding="utf-8")
+    r = load_preset(p, devices=[])
+    assert r.profile_options.wider_gears is True
+    assert r.profile_options.wider_left_trigger is True
+    assert r.profile_options.wider_prop_placement is True
