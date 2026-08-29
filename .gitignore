@@ -17,8 +17,7 @@ tests/gamedata/
 
 # Local scratch: downloads, installer unpacks, throwaway experiments (all reproducible).
 # download_pithouse.py now lives here, so it also writes the installer .exe here.
+# Docs are not good enough to publish
 scratch/
-
-# Local image dumps
-images/
+docs/
 ROADMAP.*
