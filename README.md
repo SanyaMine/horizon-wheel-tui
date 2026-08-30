@@ -129,3 +129,29 @@ generic one is used). Your mileage may vary.
 ## Notes
 
 Device silencing requires running as Administrator. Profile generation and testing work without elevation.
+
+## Disclaimer
+
+**Use this application at your own risk.**
+
+Back up your game files before using this tool. Horizon Wheel TUI includes backup and restore
+features, but you are responsible for verifying your own backups before installing generated files.
+
+This application can modify files in your game installation folder. It can also disable
+controller-class devices system-wide while device silencing is active. If you select the wrong
+device, use an incorrect game folder, overwrite files, restore the wrong backup, or run into a
+system-specific issue, your game configuration, controller behavior, Windows device state, or other
+local files may be affected.
+
+The authors are not responsible for anything that happens from using this application. This includes,
+but is not limited to, broken game files, lost settings, disabled devices, game crashes, Windows
+issues, hardware behavior changes, data loss, account issues, bans, lost time, or any other damage or
+inconvenience.
+
+This project is not affiliated with, endorsed by, sponsored by, or supported by Microsoft, Xbox,
+Playground Games, Turn 10 Studios, Forza, Steam, Valve, MOZA, or any hardware manufacturer.
+
+Forza, Xbox, Microsoft, Steam, MOZA, and all other names, trademarks, and brands belong to their
+respective owners.
+
+This software is provided as-is, with no warranty of any kind.

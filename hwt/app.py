@@ -662,6 +662,7 @@ class Step3Screen(Screen):
 class Step4Screen(Screen):
     _ffb_entries: list[str]
     _base_profiles: list
+    _official_match = None  # OfficialPreset for the connected wheel, or None
 
     def compose(self) -> ComposeResult:
         self._ffb_entries = []
@@ -700,6 +701,11 @@ class Step4Screen(Screen):
                 yield Static("Force Feedback template", classes="card-title")
                 yield Label("No native Moza template ships with the game — a direct-drive Fanatec "
                             "template is a good starting point for unsupported wheels.", classes="muted")
+                # Shown only when the connected wheel matches a bundled official Moza preset
+                # (label + visibility set in _apply_templates). A one-click, obvious apply.
+                official_btn = Button("", id="ffb-official", classes="btn-next")
+                official_btn.display = False
+                yield official_btn
                 with Horizontal(classes="row", id="ffb-model-row"):
                     yield Label("Borrow FFB from", classes="lbl")
                     yield Select([], id="ffb-model-sel", classes="field",
@@ -839,10 +845,21 @@ class Step4Screen(Screen):
 
         valid = {OFFICIAL_FFB_PREFIX + p.compact for p in self._official} | set(entries)
         auto = find_official_preset(s.wheelbase_vidpid())
+        # Prominent one-click button, shown only when the wheel matches a bundled preset — this is
+        # how the user opts in. A saved template is respected (below); the button, not a forced
+        # override, is the discoverable path to the official preset.
+        self._official_match = auto
+        obtn = self.query_one("#ffb-official", Button)
+        if auto is not None:
+            obtn.label = f"✨ Use official Moza {auto.model} FFB preset (recommended)"
+            obtn.display = True
+        else:
+            obtn.display = False
+
         if s.ffb_template_entry and s.ffb_template_entry in valid:
             best = s.ffb_template_entry
             note = f"Using saved: {best}"
-        elif auto is not None:  # wheel VID/PID matches a bundled preset → auto-select it
+        elif auto is not None:  # nothing saved yet → default to the official preset when it matches
             best = OFFICIAL_FFB_PREFIX + auto.compact
             note = f"✨ Official Moza {auto.model} FFB preset auto-selected"
         else:
@@ -975,6 +992,16 @@ class Step4Screen(Screen):
         bid = event.button.id
         if bid == "back":
             self.app.pop_screen()
+        elif bid == "ffb-official":
+            preset = self._official_match
+            if preset is None:
+                return
+            # Deliberate opt-in: clear any custom path, then select the official preset. Setting the
+            # dropdown value fires on_select_changed, which writes state.ffb_template_entry.
+            self.query_one("#ffb-custom", Input).value = ""
+            self.query_one("#ffb-sel", Select).value = OFFICIAL_FFB_PREFIX + preset.compact
+            self.query_one("#ffb-status", Label).update(
+                f"✨ Official Moza {preset.model} FFB preset selected")
         elif bid == "save-preset":
             self._sync_state()
             try:

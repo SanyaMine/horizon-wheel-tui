@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-08-30
+
+### Added
+- **One-click "Use official Moza FFB preset" button** in Step 4, shown whenever the connected wheel
+  matches a bundled preset. This makes the official preset easy to find and apply even when a
+  template was previously saved to your preset (the saved choice is still respected as the default,
+  and a fresh setup still auto-selects the official preset).
+
+### Docs
+- Added a legal disclaimer to the README (no affiliation, no warranty, use at your own risk).
+
 ## [2.1.0] - 2026-08-30
 
 ### Fixed
@@ -42,6 +53,7 @@ wheel capture (or a Quick-mode clone), patches the FFB INI, and repacks the game
 backup. See the [GitHub release notes][2.0.0-rel].
 
 [#1]: https://github.com/k0y4v2/horizon-wheel-tui/issues/1
+[2.1.1]: https://github.com/k0y4v2/horizon-wheel-tui/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/k0y4v2/horizon-wheel-tui/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/k0y4v2/horizon-wheel-tui/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/k0y4v2/horizon-wheel-tui/compare/v2.0.0...v2.0.1
