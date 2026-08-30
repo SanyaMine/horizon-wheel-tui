@@ -25,11 +25,12 @@ from textual.widgets import (
     Button, Checkbox, DataTable, Footer, Header, Input, Label, Log, Select, Static,
 )
 
-from . import presets, quickmode, silence
+from . import ffb_presets, presets, quickmode, silence
 from .devices import DeviceInfo, get_controller_devices
 from .ffb import pick_template, pick_template_for_model
+from .ffb_presets import find_official_preset
 from .forza import INPUT_ZIP, WHEEL_ZIP, find_media_folders, list_ffb_templates
-from .install import InstallResult, WizardState, generate_and_install
+from .install import OFFICIAL_FFB_PREFIX, InstallResult, WizardState, generate_and_install
 from .listener import JoystickListener
 from .pack import restore_backup
 from .profile import MappedInput, ProfileOptions, suggest_profile_name
@@ -37,6 +38,20 @@ from .steps import STEPS, category, control_hint
 from .vidpid import VidPid
 
 CORE_KEYS = {"STEER", "GAS", "BRAKE"}  # minimum required before install is meaningful
+
+# A Moza wheel enumerates with this VID/PID only while Pit House's "Base Forza Horizon Compatibility"
+# is ON — which breaks FH6 (and the official-preset match). The Welcome banner warns about it.
+MOZA_FH_COMPAT_VIDPID = "346E0015"
+
+
+def compat_mode_warning(devices: list[DeviceInfo]) -> tuple[str, bool]:
+    """(banner text, is_red) for the Welcome screen. Red + specific when a connected wheel is in
+    Moza's Forza-compat mode (0x346E0015); otherwise a muted general reminder."""
+    if any(d.vid_pid.compact == MOZA_FH_COMPAT_VIDPID for d in devices):
+        return ("⚠  Forza Horizon Compatibility is ON (0x346E0015). Turn it OFF in Moza Pit House "
+                "for FH6, then restart this tool.", True)
+    return ("Moza users: turn OFF “Base Forza Horizon Compatibility” in Pit House before "
+            "using this for FH6.", False)
 
 CSS = """
 Screen { background: $surface; }
@@ -98,6 +113,7 @@ class WelcomeScreen(Screen):
             yield Static("  Step 3  →  Map 26 controls (or skip via Quick mode)", classes="welcome-body")
             yield Static("  Step 4  →  Pick FFB & install", classes="welcome-body")
             yield Static("", classes="welcome-body")
+            yield Static("", id="welcome-warn", classes="muted")
             with Horizontal():
                 yield Button("Start Setup  →", id="start", classes="btn-next")
                 if presets.has_preset():
@@ -107,6 +123,21 @@ class WelcomeScreen(Screen):
                 yield Button("🔇 Device Silencing", id="silence")
             yield Static("", id="welcome-status", classes="welcome-body")
         yield Footer()
+
+    def on_mount(self) -> None:
+        self._check_compat_mode()
+
+    @work(thread=True)
+    def _check_compat_mode(self) -> None:
+        """Scan devices off the UI thread and show the Moza compat-mode banner (red if active)."""
+        devs = get_controller_devices()
+        self.app.call_from_thread(self._apply_compat_banner, devs)
+
+    def _apply_compat_banner(self, devs: list[DeviceInfo]) -> None:
+        text, is_red = compat_mode_warning(devs)
+        warn = self.query_one("#welcome-warn", Static)
+        warn.update(text)
+        warn.set_classes("err" if is_red else "muted")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         bid = event.button.id
@@ -654,7 +685,7 @@ class Step4Screen(Screen):
                                  "faithful build omits. Enable any independently:", classes="muted")
                     yield Checkbox("H-pattern gears (RACING) — only emitted if you captured gear inputs",
                                    id="wider-gears", value=False)
-                    yield Checkbox("Brake-as-menu-trigger (left trigger in menus)",
+                    yield Checkbox("Brake-as-menu-trigger (left trigger in menus, WARNING: may BREAK map navigation on some pedals/wheels, use with CAUTION!)",
                                    id="wider-ltrigger", value=False)
                     yield Checkbox("EventLab prop-placement controls",
                                    id="wider-prop", value=False)
@@ -797,13 +828,23 @@ class Step4Screen(Screen):
         self.app.call_from_thread(self._apply_templates, entries)
 
     def _apply_templates(self, entries: list[str]) -> None:
-        self._ffb_entries = entries
-        sel = self.query_one("#ffb-sel", Select)
-        sel.set_options([(e, e) for e in entries])
+        self._ffb_entries = entries  # game-ZIP templates only; pick_template ranges over these
         s = self.app.state
-        if s.ffb_template_entry and s.ffb_template_entry in entries:
+        # Bundled official Moza presets are offered FIRST (selectable by any wheel — the installer
+        # re-patches VendorProduct), each keyed by an `official:<compact>` sentinel value.
+        self._official = ffb_presets.list_official_presets()
+        official_opts = [(p.label(), OFFICIAL_FFB_PREFIX + p.compact) for p in self._official]
+        sel = self.query_one("#ffb-sel", Select)
+        sel.set_options(official_opts + [(e, e) for e in entries])
+
+        valid = {OFFICIAL_FFB_PREFIX + p.compact for p in self._official} | set(entries)
+        auto = find_official_preset(s.wheelbase_vidpid())
+        if s.ffb_template_entry and s.ffb_template_entry in valid:
             best = s.ffb_template_entry
             note = f"Using saved: {best}"
+        elif auto is not None:  # wheel VID/PID matches a bundled preset → auto-select it
+            best = OFFICIAL_FFB_PREFIX + auto.compact
+            note = f"✨ Official Moza {auto.model} FFB preset auto-selected"
         else:
             best = pick_template(entries, s.wheelbase_vidpid())
             note = f"Auto-selected closest: {best}" if best else ""

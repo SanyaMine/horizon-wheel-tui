@@ -35,6 +35,19 @@ NAME = "horizon-wheel-tui"
 # post-build existence check looks for the right file on each platform.
 EXE_NAME = f"{NAME}.exe" if os.name == "nt" else NAME
 
+# Bundled data folders shipped inside the exe/zip. PyInstaller's --add-data spec is
+# "SRC{os.pathsep}DEST_DIR" (';' on Windows, ':' elsewhere); DEST mirrors the source layout so the
+# runtime path resolver (hwt.ffb_presets._resource_root) finds it under sys._MEIPASS. Kept relative
+# to ROOT so the build is location-independent.
+_DATA_DIRS = ["official-moza-pithouse-ffb-presets"]
+
+
+def _add_data_args() -> list[str]:
+    args: list[str] = []
+    for d in _DATA_DIRS:
+        args += ["--add-data", f"{ROOT / d}{os.pathsep}{d}"]
+    return args
+
 
 def run_pyinstaller(*args):
     """Invoke PyInstaller through the *current* interpreter (sys.executable -m PyInstaller).
@@ -68,6 +81,7 @@ def build_exe():
         "--onefile",
         "--name", NAME,
         "--collect-all", "textual",
+        *_add_data_args(),
         "--console",
         "--noconfirm",
         "--distpath", str(DIST_DIR),
@@ -89,6 +103,7 @@ def build_zip():
         "--onedir",
         "--name", NAME,
         "--collect-all", "textual",
+        *_add_data_args(),
         "--console",
         "--noconfirm",
         "--distpath", str(portable_root),

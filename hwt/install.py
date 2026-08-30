@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable, Optional
 from xml.etree import ElementTree as ET
 
-from . import ffb, pack, quickmode
+from . import ffb, ffb_presets, pack, quickmode
 from .devices import DeviceInfo
 from .forza import INPUT_ZIP, WHEEL_ZIP, read_ffb_ini
 from .profile import (
@@ -101,8 +101,8 @@ def generate_and_install(state: WizardState, log: Callable[[str], None]) -> Inst
 
     ini_name = ffb.output_ini_name(vidpid)
     log(f"Patching FFB template → {ini_name}…")
-    ini_text = read_ffb_ini(state.wheel_zip, state.ffb_template_entry)
-    ini_text = ffb.set_vendor_product(ini_text, vidpid)
+    ini_text = _read_ffb_template(state, log)
+    ini_text = ffb.set_vendor_product(ini_text, vidpid)  # re-patch VendorProduct to the installed wheel
     (out / ini_name).write_text(ini_text, encoding="utf-8")
 
     out_input = out / INPUT_ZIP
@@ -171,6 +171,25 @@ def verify_installed_profile(media_folder: str | Path, profile_name: str,
     if bad_vidpids:
         problems.append(f"{bad_vidpids} per-Value VidPid(s) missing the 0x prefix")
     return (not problems, problems)
+
+
+# Sentinel prefix for a bundled official Moza preset selected as the FFB template. The rest is the
+# compact VID/PID; see hwt.ffb_presets and Step4Screen._apply_templates.
+OFFICIAL_FFB_PREFIX = "official:"
+
+
+def _read_ffb_template(state: WizardState, log: Callable[[str], None]) -> str:
+    """Read the chosen FFB template's text. `ffb_template_entry` is normally a game-ZIP entry name
+    (or a custom on-disk path — read_ffb_ini handles that), but an `official:<compact>` sentinel
+    resolves to a bundled Moza preset file instead."""
+    entry = state.ffb_template_entry or ""
+    if entry.startswith(OFFICIAL_FFB_PREFIX):
+        preset = ffb_presets.get_official_preset(entry[len(OFFICIAL_FFB_PREFIX):])
+        if preset is None:
+            raise FileNotFoundError(f"Official FFB preset '{entry}' is not bundled with this build.")
+        log(f"Using official Moza {preset.model} FFB preset.")
+        return preset.path.read_text(encoding="utf-8-sig")
+    return read_ffb_ini(state.wheel_zip, entry)
 
 
 def _xml_name(name: str) -> str:
